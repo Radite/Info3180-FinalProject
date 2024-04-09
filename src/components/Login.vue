@@ -61,6 +61,31 @@ export default {
 };
 </script>
 
-<style>
-/* Add any component-specific styles here */
+<style scoped>
+.main-background {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  display: flex;
+  align-items: flex-start; /* Aligns the container to the top */
+  justify-content: center;
+  padding-top: 50px; /* Adds some space at the top */
+}
+
+.container {
+  background-color: white;
+  padding: 2rem;
+  border-radius: 5px;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #0056b3;
+  border-color: #0056b3;
+}
 </style>
