@@ -17,14 +17,6 @@ const router = createRouter({
       component: HomeView
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue')
-    },
-    {
       path: '/register',
       name: 'register',
       component: Register
@@ -37,7 +29,8 @@ const router = createRouter({
     {
       path: '/explore',
       name: 'explore',
-      component: Explore
+      component: Explore,
+      meta: { requiresAuth: true }
     },
     {
       path: '/users/:userId',
@@ -56,6 +49,19 @@ const router = createRouter({
     }
   ]
 })
+// Navigation guard to check if the route requires authentication
+router.beforeEach((to, from, next) => {
+  // Check if the route requires authentication and if the user is authenticated
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const isAuthenticated = localStorage.getItem('token'); // Check if token exists 
 
+  if (requiresAuth && !isAuthenticated) {
+    // If the route requires authentication and the user is not authenticated, redirect to login
+    next({ name: 'login' });
+  } else {
+    // Otherwise, proceed with navigation
+    next();
+  }
+});
 
 export default router

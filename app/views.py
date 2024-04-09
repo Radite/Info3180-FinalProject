@@ -13,11 +13,32 @@ from . import db
 import os
 from flask import session
 from werkzeug.utils import secure_filename
+import jwt 
+from functools import wraps
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+# Token verification decorator
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if not token:
+            return jsonify({'error': 'Token is missing'}), 401
+        
+        try:
+            data = jwt.decode(token.split(' ')[1], app.config['SECRET_KEY'], algorithms=['HS256'])
+            current_user = User.query.get(data['user_id'])
+            print("Decoded token data:", data)  # Add this line for debugging
+        except:
+            return jsonify({'error': 'Token is invalid'}), 401
+
+        return f(current_user, *args, **kwargs)
+
+    return decorated
 
 ###
 # Routing for your application.
@@ -135,14 +156,14 @@ def login_user():
     data = request.json
     user = User.query.filter_by(username=data['username'], password=data['password']).first()
     if user:
-        # Set session variable to indicate user is logged in
-        session['user_id'] = user.id
-        # Redirect to the explore page
-        return redirect('/')
-    else:
-        # Return an error message for invalid login attempts
-        return jsonify({'error': 'Invalid username or password'}), 401
+        # Generate JWT token
+        token = jwt.encode({'user_id': user.id}, app.config['SECRET_KEY'], algorithm='HS256')
+        print("Token generated:", token)  # Add this line to print the generated token
 
+        # Return token to the client
+        return jsonify({'token': token})
+    else:
+        return jsonify({'error': 'Invalid username or password'}), 401
 
 # Route for user logout
 @app.route('/api/v1/auth/logout', methods=['POST'])
@@ -202,7 +223,8 @@ def toggle_follow_user(user_id):
 
 # Route for retrieving all posts for all users
 @app.route('/api/v1/posts', methods=['GET'])
-def get_all_posts():
+@token_required
+def get_all_posts(current_user):
     all_posts = Post.query.all()
     posts_data = [{'id': post.id, 'caption': post.caption, 'photo': post.photo, 'user_id': post.user_id, 'created_on': post.created_on} for post in all_posts]
     return jsonify({'posts': posts_data})
@@ -255,3 +277,8 @@ def get_all_users():
     
     # Return JSON response with all users
     return jsonify({'users': users_data})
+
+@app.route('/api/v1/auth/check', methods=['GET'])
+@token_required
+def check_authentication(current_user):
+    return jsonify({'message': 'User is authenticated'})

@@ -18,12 +18,9 @@
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
               <RouterLink to="/" class="nav-link active">Home</RouterLink>
-            </li>
-            <li class="nav-item">
-              <RouterLink class="nav-link" to="/about">About</RouterLink>
-            </li>
-          
+            </li>          
           </ul>
+          <button @click="logout" class="btn btn-light">Logout</button> <!-- Logout button -->
         </div>
       </div>
     </nav>
@@ -31,7 +28,35 @@
 </template>
 
 <script setup>
-import { RouterLink } from "vue-router";
+import { useRouter } from "vue-router";
+import axios from "axios";
+const router = useRouter();
+// Function to logout the user
+const logout = async () => {
+  try {
+    const token = localStorage.getItem("token"); // Get the token from local storage
+    if (!token) {
+      console.error("Authentication token is missing");
+      return;
+    }
+    // Call the logout API endpoint
+    const response = await axios.post(
+      "http://localhost:8080/api/v1/auth/logout",
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Include the token in the request headers
+        },
+      }
+    );
+    // Clear local storage and redirect to the home page
+    localStorage.removeItem("token");
+    router.push("/");
+  } catch (error) {
+    console.error("Logout error:", error);
+    // Handle logout error
+  }
+};
 </script>
 
 <style>

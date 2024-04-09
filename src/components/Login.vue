@@ -29,37 +29,38 @@ export default {
   },
   methods: {
     async login() {
-      try {
-        const response = await fetch('http://localhost:8080/api/v1/auth/login', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            username: this.username,
-            password: this.password
-          })
-        });
+  try {
+    const response = await fetch('http://localhost:8080/api/v1/auth/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        username: this.username,
+        password: this.password
+      })
+    });
 
-        if (response.ok) {
-            const data = await response.json();
-            // Store token in local storage
-            localStorage.setItem('token', data.token);
-            // Redirect to homepage on successful login
-            this.$router.push('/');
-        
-        } else {
-          const errorData = await response.json();
-          this.errorMessage = errorData.error;
-        }
-      } catch (error) {
-        console.error('Login error:', error);
-        this.errorMessage = 'An error occurred during login. Please try again later.';
-      }
+    if (response.ok) {
+      const data = await response.json();
+      // Store token in local storage
+      localStorage.setItem('token', data.token);
+      // Redirect to homepage on successful login
+      this.$router.push('/explore');
+    } else {
+      const errorData = await response.json();
+      this.errorMessage = errorData.error;
     }
+  } catch (error) {
+    console.error('Login error:', error);
+    this.errorMessage = 'An error occurred during login. Please try again later.';
+  }
+}
+
   }
 };
 </script>
+
 
 <style scoped>
 .main-background {
