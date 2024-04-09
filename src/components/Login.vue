@@ -45,6 +45,8 @@ export default {
       const data = await response.json();
       // Store token in local storage
       localStorage.setItem('token', data.token);
+      localStorage.setItem('userId', data.userId); // assuming the userId is returned in the response
+
       // Redirect to homepage on successful login
       this.$router.push('/explore');
     } else {

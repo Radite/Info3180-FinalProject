@@ -161,7 +161,7 @@ def login_user():
         print("Token generated:", token)  # Add this line to print the generated token
 
         # Return token to the client
-        return jsonify({'token': token})
+        return jsonify({'token': token, 'user_id': user.id})
     else:
         return jsonify({'error': 'Invalid username or password'}), 401
 
@@ -179,17 +179,44 @@ def logout_user():
 # Route for adding posts to a user's feed
 @app.route('/api/v1/users/<int:user_id>/posts', methods=['POST'])
 def add_post(user_id):
-    data = request.json
-    new_post = Post(
-        caption=data['caption'],
-        photo=data['photo'],
-        user_id=user_id,
-        created_on=datetime.utcnow()
-    )
-    db.session.add(new_post)
-    db.session.commit()
-    return jsonify({'message': 'Post added successfully'})
+    data = request.form
 
+    # Define the folder for user posts
+    user_posts_folder = os.path.join(app.config['UPLOAD_FOLDER'], 'posts', str(user_id))
+
+    # Check if the POST request contains the file part
+    if 'photo' not in request.files:
+        return jsonify({'error': 'No file part'})
+
+    photo = request.files['photo']
+
+    # If the user does not select a file, the browser may also submit an empty file without a filename
+    if photo.filename == '':
+        return jsonify({'error': 'No selected file'})
+
+    if photo:
+        try:
+            # Save the photo to the user's posts folder
+            os.makedirs(user_posts_folder, exist_ok=True)
+            filename = secure_filename(photo.filename)
+            photo_path = os.path.join(user_posts_folder, filename)
+            photo.save(photo_path)
+        except Exception as e:
+            return jsonify({'error': str(e)})
+
+        # Save post data to the database
+        new_post = Post(
+            caption=data['caption'],
+            photo=photo_path,
+            user_id=user_id,
+            created_on=datetime.utcnow()
+        )
+        db.session.add(new_post)
+        db.session.commit()
+
+        return jsonify({'message': 'Post added successfully'})
+    else:
+        return jsonify({'error': 'Invalid file'})
 # Route for retrieving a user's posts
 @app.route('/api/v1/users/<int:user_id>/posts', methods=['GET'])
 def get_user_posts(user_id):
