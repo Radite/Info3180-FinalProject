@@ -8,11 +8,16 @@ This file creates your application.
 from app import app
 from flask import render_template, request, jsonify, send_file
 from datetime import datetime
-from .models import User, Post, Like, Follow
+from .models import User, Post, Likes, Follow
 from . import db
 import os
 from flask import session
+from werkzeug.utils import secure_filename
 
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 ###
 # Routing for your application.
@@ -66,24 +71,63 @@ def page_not_found(error):
     """Custom 404 page."""
     return render_template('404.html'), 404
 
-# Route for user registration
 @app.route('/api/v1/register', methods=['POST'])
 def register_user():
-    data = request.json
-    new_user = User(
-        username=data['username'],
-        password=data['password'],
-        firstname=data['firstname'],
-        lastname=data['lastname'],
-        email=data['email'],
-        location=data.get('location'),
-        biography=data.get('biography'),
-        profile_photo=data.get('profile_photo'),
-        joined_on=datetime.utcnow()
-    )
-    db.session.add(new_user)
-    db.session.commit()
-    return jsonify({'message': 'User registered successfully'})
+    data = request.form  # assuming form data is sent
+
+    # Check if the POST request contains the file part
+    print("Form Data:", data)  # Print form data for debugging
+    if 'profile_photo' not in request.files:
+        print("No file part")
+        return jsonify({'error': 'No file part'})
+
+    profile_photo = request.files['profile_photo']
+    print("Profile Photo:", profile_photo)  # Print profile photo for debugging
+
+    # If the user does not select a file, the browser may also submit an empty file without a filename
+    if profile_photo.filename == '':
+        print("No selected file")
+        return jsonify({'error': 'No selected file'})
+
+    if profile_photo and allowed_file(profile_photo.filename):
+        try:
+            # Save the profile photo to the uploads folder
+            os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'profilephotos'), exist_ok=True)
+            filename = secure_filename(profile_photo.filename)
+            profile_photo_path = os.path.join(app.config['UPLOAD_FOLDER'], 'profilephotos', filename)
+            profile_photo.save(profile_photo_path)
+            print("Profile Photo Path:", profile_photo_path)  # Print profile photo path for debugging
+
+            # Save user data to the database and reference the profile photo path
+            print("Saving user data to the database...")
+
+            new_user = User(
+                username=data['username'],
+                password=data['password'],
+                firstname=data['firstname'],
+                lastname=data['lastname'],
+                email=data['email'],
+                location=data.get('location'),
+                biography=data.get('biography'),
+                profile_photo=profile_photo_path,  # Save the profile photo path to the database
+                joined_on=datetime.utcnow()
+            )
+            print(new_user.__dict__)
+
+            db.session.add(new_user)
+            db.session.commit()
+
+            print("User registered successfully")
+            return jsonify({'message': 'User registered successfully'})
+        except Exception as e:
+            # Handle exceptions and return an error message
+            print(f"Exception occurred: {e}")
+            return jsonify({'error': str(e)})
+    else:
+        return jsonify({'error': 'Invalid file type'})
+
+# Import the redirect function
+from flask import redirect
 
 # Route for user login
 @app.route('/api/v1/auth/login', methods=['POST'])
@@ -93,9 +137,12 @@ def login_user():
     if user:
         # Set session variable to indicate user is logged in
         session['user_id'] = user.id
-        return jsonify({'message': 'User logged in successfully'})
+        # Redirect to the explore page
+        return redirect('/')
     else:
-        return jsonify({'error': 'Invalid username or password'})
+        # Return an error message for invalid login attempts
+        return jsonify({'error': 'Invalid username or password'}), 401
+
 
 # Route for user logout
 @app.route('/api/v1/auth/logout', methods=['POST'])
@@ -161,13 +208,13 @@ def get_all_posts():
     return jsonify({'posts': posts_data})
 
 # Route for setting or unsetting a like on a post
-@app.route('/api/v1/posts/<int:post_id>/like', methods=['POST'])
+@app.route('/api/v1/posts/<int:post_id>/likes', methods=['POST'])
 def toggle_like_post(post_id):
     data = request.json
     user_id = data['user_id']
 
     # Check if user has already liked the post
-    existing_like = Like.query.filter_by(post_id=post_id, user_id=user_id).first()
+    existing_like = Likes.query.filter_by(post_id=post_id, user_id=user_id).first()
 
     if existing_like:
         # Unlike the post
@@ -176,7 +223,7 @@ def toggle_like_post(post_id):
         return jsonify({'message': 'Post unliked successfully'})
     else:
         # Like the post
-        new_like = Like(
+        new_like = Likes(
             post_id=post_id,
             user_id=user_id
         )
