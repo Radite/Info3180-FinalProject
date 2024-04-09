@@ -19,6 +19,9 @@
             <li class="nav-item">
               <RouterLink to="/" class="nav-link active">Home</RouterLink>
             </li>          
+            <li class="nav-item">
+              <RouterLink :to="`/users/${userId}`" class="nav-link">My Profile</RouterLink> <!-- My Profile link -->
+            </li>
           </ul>
           <button @click="logout" class="btn btn-light">Logout</button> <!-- Logout button -->
         </div>
@@ -31,6 +34,21 @@
 import { useRouter } from "vue-router";
 import axios from "axios";
 const router = useRouter();
+import { jwtDecode } from "jwt-decode";
+
+let userId = null;
+
+// Decode the token and set userId
+const decodeToken = () => {
+  const token = localStorage.getItem("token");
+  if (token) {
+    const decodedToken = jwtDecode(token);
+    userId = decodedToken.user_id;
+  }
+};
+decodeToken();
+console.log(userId)
+
 // Function to logout the user
 const logout = async () => {
   try {

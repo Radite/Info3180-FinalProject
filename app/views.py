@@ -15,6 +15,7 @@ from flask import session
 from werkzeug.utils import secure_filename
 import jwt 
 from functools import wraps
+from flask import send_from_directory
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
@@ -115,8 +116,8 @@ def register_user():
             # Save the profile photo to the uploads folder
             os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'profilephotos'), exist_ok=True)
             filename = secure_filename(profile_photo.filename)
-            profile_photo_path = os.path.join(app.config['UPLOAD_FOLDER'], 'profilephotos', filename)
-            profile_photo.save(profile_photo_path)
+            profile_photo_path = os.path.join('profilephotos', filename)  # Relative path from the uploads folder
+            profile_photo.save(os.path.join(app.config['UPLOAD_FOLDER'], profile_photo_path))
             print("Profile Photo Path:", profile_photo_path)  # Print profile photo path for debugging
 
             # Save user data to the database and reference the profile photo path
@@ -199,8 +200,8 @@ def add_post(user_id):
             # Save the photo to the user's posts folder
             os.makedirs(user_posts_folder, exist_ok=True)
             filename = secure_filename(photo.filename)
-            photo_path = os.path.join(user_posts_folder, filename)
-            photo.save(photo_path)
+            photo_path = os.path.join('posts', str(user_id), filename)  # Relative path from the uploads folder
+            photo.save(os.path.join(app.config['UPLOAD_FOLDER'], photo_path))
         except Exception as e:
             return jsonify({'error': str(e)})
 
@@ -250,10 +251,26 @@ def toggle_follow_user(user_id):
 
 # Route for retrieving all posts for all users
 @app.route('/api/v1/posts', methods=['GET'])
-@token_required
-def get_all_posts(current_user):
+def get_all_posts():
     all_posts = Post.query.all()
-    posts_data = [{'id': post.id, 'caption': post.caption, 'photo': post.photo, 'user_id': post.user_id, 'created_on': post.created_on} for post in all_posts]
+    posts_data = []
+
+    for post in all_posts:
+        # Count likes for each post
+        likes_count = Likes.query.filter_by(post_id=post.id).count()
+
+        # Construct data for each post including likes count
+        post_data = {
+            'id': post.id,
+            'caption': post.caption,
+            'photo': post.photo,
+            'user_id': post.user_id,
+            'created_on': post.created_on,
+            'likes_count': likes_count  # Include the likes count
+        }
+
+        posts_data.append(post_data)
+
     return jsonify({'posts': posts_data})
 
 # Route for setting or unsetting a like on a post
@@ -309,3 +326,37 @@ def get_all_users():
 @token_required
 def check_authentication(current_user):
     return jsonify({'message': 'User is authenticated'})
+
+@app.route('/api/v1/users/<int:user_id>', methods=['GET'])
+def get_user(user_id):
+    user = User.query.get(user_id)
+    if user:
+        user_data = {
+            'id': user.id,
+            'username': user.username,
+            'firstname': user.firstname,
+            'lastname': user.lastname,
+            'email': user.email,
+            'location': user.location,
+            'biography': user.biography,
+            'profile_photo': user.profile_photo,
+            'joined_on': user.joined_on
+        }
+        return jsonify({'user': user_data})
+    else:
+        return jsonify({'error': 'User not found'}), 404
+
+@app.route('/uploads/<path:filename>')
+def serve_photo(filename):
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+# Route to fetch updated post data by ID
+@app.route('/api/v1/posts/<int:post_id>', methods=['GET'])
+def get_post_by_id(post_id):
+    post = Post.query.get_or_404(post_id)
+    post_data = {
+        'id': post.id,
+        'caption': post.caption,
+        'likes_count': len(post.likes)
+    }
+    return jsonify({'post': post_data}), 200

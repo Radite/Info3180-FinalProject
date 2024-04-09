@@ -19,6 +19,7 @@ class Post(db.Model):
     photo = db.Column(db.String(255))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     created_on = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    likes = db.relationship('Likes', backref='post', lazy=True)
 
 class Likes(db.Model):
     id = db.Column(db.Integer, primary_key=True)
