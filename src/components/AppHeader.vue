@@ -22,6 +22,7 @@
             <li class="nav-item">
               <RouterLink class="nav-link" to="/about">About</RouterLink>
             </li>
+          
           </ul>
         </div>
       </div>
