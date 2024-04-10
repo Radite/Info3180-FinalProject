@@ -21,6 +21,8 @@
         </div>
       </div>
     </div>
+    <router-link to="/posts/new" class="new-post-button">New Post</router-link>
+
   </div>
 </template>
 
@@ -33,8 +35,9 @@ export default {
     return {
       posts: [],
       error: '',
-      USER_ID: null // Initialize USER_ID
-    }
+      USER_ID: null, // Initialize USER_ID
+      users: [] // Array to store users data
+    };
   },
   mounted() {
     // Get the user ID from the token
@@ -65,22 +68,49 @@ export default {
           this.posts = response.data.posts;
           this.error = '';
 
-          // Check if the current user has liked each post
-          this.checkLikedPosts();
+          // Fetch users data
+          this.fetchUsers();
         })
         .catch(error => {
           console.error('Error fetching posts:', error);
           this.error = 'Failed to fetch posts. Please try again later.';
         });
     },
-    checkLikedPosts() {
-      // Initialize 'liked' property for each post after USER_ID is initialized
+    fetchUsers() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('Authentication token is missing');
+        this.error = 'Authentication token is missing';
+        return;
+      }
+
+      // Fetch users
+      axios.get('http://localhost:8080/api/v1/users', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      })
+        .then(response => {
+          this.users = response.data.users;
+          this.error = '';
+
+          // Assign user profiles to posts
+          this.assignUserProfilesToPosts();
+        })
+        .catch(error => {
+          console.error('Error fetching users:', error);
+          this.error = 'Failed to fetch users. Please try again later.';
+        });
+    },
+    assignUserProfilesToPosts() {
+      // Loop through each post and find matching user data to assign to post's userProfile property
       this.posts.forEach(post => {
-        // Check if the 'likes' array exists and is not null or undefined
-        if (post.likes && post.likes.length) {
-          post.liked = post.likes.some(like => like.user_id === this.USER_ID);
-        } else {
-          post.liked = false; // Initialize 'liked' property as false if 'likes' array is not defined or empty
+        const user = this.users.find(user => user.id === post.user_id);
+        if (user) {
+          post.userProfile = {
+            profile_photo: user.profile_photo,
+            username: user.username
+          };
         }
       });
     },
@@ -171,16 +201,18 @@ export default {
         });
     }
   }
+
 }
 </script>
 
 <style>
 .posts-container {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
+  flex-direction: column; /* Stack posts vertically */
+  align-items: center; /* Center horizontally */
   padding: 20px;
   background-color: #fafafa;
+  position: relative; 
 }
 
 .post-card {
@@ -205,8 +237,8 @@ export default {
 }
 
 .user-profile-pic {
-  width: 30px;
-  height: 30px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   margin-right: 10px;
 }
@@ -263,4 +295,19 @@ export default {
 .liked {
   color: red;
 }
+.new-post-button {
+  background-color: #4a90e2; /* Light blue color */
+  border: none;
+  color: #000;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 16px;
+  border-radius: 5px;
+  cursor: pointer;
+  position: absolute; /* Change to absolute positioning */
+  top: 20px;
+  right: 20px;
+}
+
 </style>
