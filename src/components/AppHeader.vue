@@ -1,8 +1,11 @@
 <template>
+  <head>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+  </head>
   <header>
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
       <div class="container-fluid">
-        <a class="navbar-brand" href="/">VueJS with Flask</a>
+        <h1 class="instagram-font smaller-logo"><i class="fas fa-camera smaller-icon"></i> <span class="underline"></span> <span class="photogram-text">Photogram</span></h1>
         <button
           class="navbar-toggler"
           type="button"
@@ -15,15 +18,20 @@
           <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-          <ul class="navbar-nav me-auto">
+          <ul class="navbar-nav ml-auto">
             <li class="nav-item">
               <RouterLink to="/" class="nav-link active">Home</RouterLink>
-            </li>          
+            </li>
+            <li class="nav-item">
+              <RouterLink to="/explore" class="nav-link">Explore</RouterLink>
+            </li>
             <li class="nav-item">
               <RouterLink :to="`/users/${userId}`" class="nav-link">My Profile</RouterLink> <!-- My Profile link -->
             </li>
+            <li class ="nav-item">
+              <a @click="logout" class="nav-link">Logout</a> <!-- Logout link -->
+            </li>
           </ul>
-          <button @click="logout" class="btn btn-light">Logout</button> <!-- Logout button -->
         </div>
       </div>
     </nav>
@@ -78,5 +86,41 @@ const logout = async () => {
 </script>
 
 <style>
-/* Add any component specific styles here */
+/* Smaller camera icon and logo text */
+.smaller-icon {
+  font-size: 20px; /* Adjust the font size as needed */
+}
+
+.smaller-logo {
+  font-size: 24px; /* Adjust the font size as needed */
+}
+
+/* White photogram text */
+.photogram-text {
+  color: white;
+}
+
+/* Align list items to the right */
+.navbar-nav {
+  margin-left: auto;
+}
+
+/* Make list items inline and adjust margin */
+.nav-item {
+  display: inline-block;
+  margin-right: 10px; /* Adjust the margin as needed */
+}
+
+/* Set cursor pointer for navigation links */
+.nav-link {
+  cursor: pointer;
+  color: white;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  transition: background-color 0.3s;
+}
+
+.nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
 </style>

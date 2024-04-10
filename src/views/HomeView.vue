@@ -133,6 +133,7 @@ const photogramMessage = ref("Share your favorite moments with friends, family, 
 .photogram-text {
   position: relative; /* Set relative positioning */
   z-index: 1; /* Set z-index */
+  color:black;
 }
 
 /* Styles for the register and login buttons */
