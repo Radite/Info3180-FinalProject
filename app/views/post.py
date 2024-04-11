@@ -1,0 +1,111 @@
+from flask import jsonify, request
+from app import app, db
+from ..models import Post, Likes
+import os
+
+# Route for adding posts to a user's feed
+@app.route('/api/v1/users/<int:user_id>/posts', methods=['POST'])
+def add_post(user_id):
+    data = request.form
+
+    # Define the folder for user posts
+    user_posts_folder = os.path.join(app.config['UPLOAD_FOLDER'], 'posts', str(user_id))
+
+    # Check if the POST request contains the file part
+    if 'photo' not in request.files:
+        return jsonify({'error': 'No file part'})
+
+    photo = request.files['photo']
+
+    # If the user does not select a file, the browser may also submit an empty file without a filename
+    if photo.filename == '':
+        return jsonify({'error': 'No selected file'})
+
+    if photo:
+        try:
+            # Save the photo to the user's posts folder
+            os.makedirs(user_posts_folder, exist_ok=True)
+            filename = secure_filename(photo.filename)
+            photo_path = os.path.join('posts', str(user_id), filename)  # Relative path from the uploads folder
+            photo.save(os.path.join(app.config['UPLOAD_FOLDER'], photo_path))
+        except Exception as e:
+            return jsonify({'error': str(e)})
+
+        # Save post data to the database
+        new_post = Post(
+            caption=data['caption'],
+            photo=photo_path,
+            user_id=user_id,
+            created_on=datetime.utcnow()
+        )
+        db.session.add(new_post)
+        db.session.commit()
+
+        return jsonify({'message': 'Post added successfully'})
+    else:
+        return jsonify({'error': 'Invalid file'})
+# Route for retrieving a user's posts
+@app.route('/api/v1/users/<int:user_id>/posts', methods=['GET'])
+def get_user_posts(user_id):
+    user_posts = Post.query.filter_by(user_id=user_id).all()
+    posts_data = [{'id': post.id, 'caption': post.caption, 'photo': post.photo, 'created_on': post.created_on} for post in user_posts]
+    return jsonify({'posts': posts_data})
+
+# Route for retrieving all posts for all users
+@app.route('/api/v1/posts', methods=['GET'])
+def get_all_posts():
+    all_posts = Post.query.all()
+    posts_data = []
+
+    for post in all_posts:
+        # Count likes for each post
+        likes_count = Likes.query.filter_by(post_id=post.id).count()
+
+        # Construct data for each post including likes count
+        post_data = {
+            'id': post.id,
+            'caption': post.caption,
+            'photo': post.photo,
+            'user_id': post.user_id,
+            'created_on': post.created_on,
+            'likes_count': likes_count  # Include the likes count
+        }
+
+        posts_data.append(post_data)
+
+    return jsonify({'posts': posts_data})
+
+# Route for setting or unsetting a like on a post
+@app.route('/api/v1/posts/<int:post_id>/likes', methods=['POST'])
+def toggle_like_post(post_id):
+    data = request.json
+    user_id = data['user_id']
+
+    # Check if user has already liked the post
+    existing_like = Likes.query.filter_by(post_id=post_id, user_id=user_id).first()
+
+    if existing_like:
+        # Unlike the post
+        db.session.delete(existing_like)
+        db.session.commit()
+        return jsonify({'message': 'Post unliked successfully'})
+    else:
+        # Like the post
+        new_like = Likes(
+            post_id=post_id,
+            user_id=user_id
+        )
+        db.session.add(new_like)
+        db.session.commit()
+        return jsonify({'message': 'Post liked successfully'})
+
+# Route to fetch updated post data by ID
+@app.route('/api/v1/posts/<int:post_id>', methods=['GET'])
+def get_post_by_id(post_id):
+    post = Post.query.get_or_404(post_id)
+    post_data = {
+        'id': post.id,
+        'caption': post.caption,
+        'likes_count': len(post.likes)
+    }
+    return jsonify({'post': post_data}), 200
