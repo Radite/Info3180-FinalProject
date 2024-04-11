@@ -69,7 +69,7 @@ export default {
 </script>
 <style scoped>
 .main-background {
-  background-color: #f8f9fa;
+  background-color: #f0f0f0;
   min-height: 100vh;
   display: flex;
   align-items: flex-start; /* Aligns the container to the top */
@@ -82,6 +82,8 @@ export default {
   padding: 2rem;
   border-radius: 5px;
   box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  width: 400px;
+
 }
 
 .btn-primary {
