@@ -75,7 +75,7 @@ def get_user(user_id):
         return jsonify({'user': user_data})
     else:
         return jsonify({'error': 'User not found'}), 404
-        
+
 def get_followers_count(user_id):
     followers_count = Follow.query.filter_by(user_id=user_id).count()
     return followers_count
@@ -84,3 +84,12 @@ def get_following_count(user_id):
     following_count = Follow.query.filter_by(follower_id=user_id).count()
     return following_count
 
+
+@app.route('/api/v1/users/<int:follower_id>/follow_status/<int:followed_id>', methods=['GET'])
+def check_follow_status(follower_id, followed_id):
+    try:
+        # Check if the follower is following the followed user
+        is_following = Follow.query.filter_by(follower_id=follower_id, user_id=followed_id).first() is not None
+        return jsonify({'is_following': is_following})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
