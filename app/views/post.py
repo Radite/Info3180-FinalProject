@@ -130,3 +130,19 @@ def get_all_likes():
     likes = Likes.query.all()
     likes_data = [{'id': like.id, 'post_id': like.post_id, 'user_id': like.user_id} for like in likes]
     return jsonify({'likes': likes_data})
+# Route for deleting a post
+@app.route('/api/v1/posts/<int:post_id>', methods=['DELETE'])
+def delete_post(post_id):
+    # Query the database to find the post by its ID
+    post = Post.query.get_or_404(post_id)
+
+    try:
+        # Delete the post from the database
+        db.session.delete(post)
+        db.session.commit()
+        # Delete the post image file from the file system
+        os.remove(os.path.join(app.config['UPLOAD_FOLDER'], post.photo))
+        return jsonify({'message': 'Post deleted successfully'}), 200
+    except Exception as e:
+        # If an error occurs during deletion, return an error response
+        return jsonify({'error': str(e)}), 500

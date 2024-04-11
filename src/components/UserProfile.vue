@@ -52,6 +52,8 @@
           <video v-if="isVideo(post.photo)" :src="getImageUrl(post.photo)" controls class="post-image"></video>
           <!-- Display image if the post is not a video -->
           <img v-else :src="getImageUrl(post.photo)" alt="Post Image" class="post-image">
+          <button v-if="isCurrentUser" @click="deletePost(post.id)" class="delete-button">Delete</button>
+
         </div>
       </div>
     </div>
@@ -166,7 +168,22 @@ export default {
       const date = new Date(joinedDate);
       const options = { month: 'long', year: 'numeric' };
       return date.toLocaleDateString('en-US', options);
-    }
+    },
+    deletePost(postId) {
+  // Send a request to the server to delete the post
+  axios.delete(`http://localhost:8080/api/v1/posts/${postId}`)
+    .then(response => {
+      // Handle success
+      console.log('Post deleted successfully');
+      // Remove the deleted post from the local posts array
+      this.posts = this.posts.filter(post => post.id !== postId);
+    })
+    .catch(error => {
+      // Handle error
+      console.error('Error deleting post:', error);
+    });
+}
+
   }
 };
 </script>
@@ -294,5 +311,16 @@ export default {
   cursor: pointer; /* Add pointer cursor */
   width: 200px; /* Set width of button */
   border-radius: 5px; /* Add border radius */
+}
+.delete-button {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 5px;
 }
 </style>
