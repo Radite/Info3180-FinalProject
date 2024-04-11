@@ -1,3 +1,19 @@
+<template>
+  <div class="container">
+    <form @submit.prevent="submitForm">
+      <label for="caption">Caption:</label>
+      <input type="text" id="caption" v-model="caption">
+
+      <label for="photo">Photo/Video:</label>
+      <input type="file" id="photo" accept="image/*, video/*" @change="onFileChange">
+
+      <p v-if="error" class="error">{{ error }}</p>
+
+      <button type="submit">Submit</button>
+    </form>
+  </div>
+</template>
+
 <script>
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
@@ -7,7 +23,8 @@ export default {
     return {
       caption: '',
       photo: null,
-      USER_ID: null // initialize USER_ID as null
+      USER_ID: null, // initialize USER_ID as null
+      error: '' // initialize error as empty string
     };
   },
   created() {
@@ -19,6 +36,12 @@ export default {
   },
   methods: {
     async submitForm() {
+      // Check if photo is null or has invalid extension
+      if (!this.photo || !this.allowedFile(this.photo.name)) {
+        this.error = 'Invalid file. Please upload a valid photo/video.';
+        return;
+      }
+
       const formData = new FormData();
       formData.append('caption', this.caption);
       formData.append('photo', this.photo);
@@ -36,40 +59,28 @@ export default {
           },
         });
         console.log(response.data);
+        // Display success message
+        setTimeout(() => {
+          console.log('Redirecting...');
+          this.$router.push('/explore'); // Redirect to '/explore'
+        }, 1000);
       } catch (error) {
         console.error(error);
       }
     },
     onFileChange(event) {
       this.photo = event.target.files[0];
+    },
+    allowedFile(filename) {
+      const allowedExtensions = ['png', 'jpg', 'jpeg', 'gif', 'mp4', 'mov', 'avi'];
+      const extension = filename.split('.').pop().toLowerCase();
+      return allowedExtensions.includes(extension);
     }
   },
 };
-
 </script>
 
-<template>
-  <div class="container">
-    <form @submit.prevent="submitForm">
-      <label for="caption">Caption:</label>
-      <input type="text" id="caption" v-model="caption">
-
-      <label for="photo">Photo:</label>
-      <input type="file" id="photo" @change="onFileChange">
-
-      <button type="submit">Submit</button>
-    </form>
-  </div>
-</template>
-
 <style scoped>
-body {
-  font-family: Arial, sans-serif;
-  background-color: #f4f4f4;
-  margin: 0;
-  padding: 0;
-}
-
 .container {
   max-width: 500px;
   margin: 0 auto;
@@ -82,21 +93,21 @@ form {
   margin-top: 20px;
 }
 
-form label {
+label {
   font-weight: bold;
   display: block;
   margin-bottom: 5px;
 }
 
-form input[type="text"],
-form input[type="file"] {
+input[type="text"],
+input[type="file"] {
   width: 100%;
   padding: 10px;
   border: 1px solid #ddd;
   margin-bottom: 20px;
 }
 
-form button {
+button {
   padding: 10px 15px;
   background-color: #007BFF;
   color: #fff;
@@ -104,7 +115,12 @@ form button {
   cursor: pointer;
 }
 
-form button:hover {
+button:hover {
   background-color: #0056b3;
+}
+
+.error {
+  color: red;
+  margin-bottom: 20px;
 }
 </style>

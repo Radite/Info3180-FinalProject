@@ -2,6 +2,14 @@ from flask import jsonify, request
 from app import app, db
 from ..models import Post, Likes
 import os
+from werkzeug.utils import secure_filename
+from datetime import datetime
+
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mov', 'avi'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 # Route for adding posts to a user's feed
 @app.route('/api/v1/users/<int:user_id>/posts', methods=['POST'])
@@ -21,7 +29,7 @@ def add_post(user_id):
     if photo.filename == '':
         return jsonify({'error': 'No selected file'})
 
-    if photo:
+    if photo and allowed_file(photo.filename):
         try:
             # Save the photo to the user's posts folder
             os.makedirs(user_posts_folder, exist_ok=True)
