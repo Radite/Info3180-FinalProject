@@ -16,29 +16,35 @@
         <div class="biography">{{ user.biography }}</div>
       </div>
 
-      <!-- User stats -->
-      <div class="user-stats">
-        <div>
-          <div>{{ posts.length }}</div>
-          <div>Posts</div>
+      <!-- User stats and follow button -->
+      <div class="stats-and-button-container">
+        <!-- User stats -->
+        <div class="user-stats">
+          <div>
+            <div>{{ posts.length }}</div>
+            <div>Posts</div>
+          </div>
+          <div>
+            <div>{{ user.followers_count }}</div>
+            <div>Followers</div>
+          </div>
+          <div>
+            <div>{{ user.following_count }}</div>
+            <div>Following</div>
+          </div>
         </div>
-        <div>
-          <div>{{ user.followers_count }}</div>
-          <div>Followers</div>
-        </div>
-        <div>
-          <div>{{ user.following_count }}</div>
-          <div>Following</div>
+
+        <!-- Follow button -->
+        <div class="follow-button-container">
+          <button v-if="!isCurrentUser && !isFollowing" @click="toggleFollow" class="follow-button">{{ followButtonText }}</button>
+          <button v-else-if="isCurrentUser" @click="editProfile" class="follow-button">Edit Profile</button>
+          <button v-else @click="toggleFollow" class="follow-button">Following</button>
         </div>
       </div>
-
-      <!-- Follow button -->
-      <button v-if="!isCurrentUser" @click="toggleFollow" class="follow-button">{{ followButtonText }}</button>
     </div>
     <div v-else>Loading...</div>
 
     <!-- Posts -->
-    <h2>Posts</h2>
     <div v-if="posts" class="post-grid">
       <div v-for="post in posts" :key="post.id" class="post-item">
         <div class="post-image-container">
@@ -52,6 +58,7 @@
     <div v-else>No posts found.</div>
   </div>
 </template>
+
 
 <script>
 import axios from 'axios';
@@ -70,23 +77,29 @@ export default {
       followButtonText: '' // Initialize followButtonText
     };
   },
+  watch: {
+    '$route': 'fetchData'
+  },
   mounted() {
-  // Get the token from localStorage and decode it to extract the user ID
-  const token = localStorage.getItem('token');
-  if (token) {
-    const decodedToken = jwtDecode(token);
-    this.USER_ID = decodedToken.user_id; // Set USER_ID to the user_id from the decoded token
-  }
-
-  const userId = this.$route.params.userId;
-  this.fetchUserData(userId);
-  this.fetchUserPosts(userId);
-  this.checkIfFollowing(userId).then(() => {
-    this.setFollowButtonText(); // Update followButtonText after checking follow status
-  });
-  this.checkIfCurrentUser(userId);
-},
+    this.fetchData();
+  },
   methods: {
+    fetchData() {
+      // Get the token from localStorage and decode it to extract the user ID
+      const token = localStorage.getItem('token');
+      if (token) {
+        const decodedToken = jwtDecode(token);
+        this.USER_ID = decodedToken.user_id; // Set USER_ID to the user_id from the decoded token
+      }
+      this.loggedInUserId = this.USER_ID
+      const userId = this.$route.params.userId;
+      this.fetchUserData(userId);
+      this.fetchUserPosts(userId);
+      this.checkIfFollowing(userId).then(() => {
+        this.setFollowButtonText(); // Update followButtonText after checking follow status
+      });
+      this.checkIfCurrentUser(userId);
+    },
     async toggleFollow() {
   try {
     const userId = this.$route.params.userId;
@@ -125,7 +138,7 @@ export default {
     },
     async checkIfFollowing(userId) {
         try {
-            const response = await axios.get(`http://localhost:8080/api/v1/users/${userId}/follow_status/${this.USER_ID}`);
+            const response = await axios.get(`http://localhost:8080/api/v1/users/${this.USER_ID}/follow_status/${userId}`);
             this.isFollowing = response.data.is_following;
             this.setFollowButtonText(); // Update followButtonText after checking follow status
         } catch (error) {
@@ -137,7 +150,7 @@ export default {
     },
     setFollowButtonText() {
       // Set followButtonText based on isFollowing
-      this.followButtonText = this.isFollowing ? 'Unfollow' : 'Follow';
+      this.followButtonText = this.isFollowing ? 'Following' : 'Follow';
     },
     getImageUrl(photoPath) {
       return `http://localhost:8080/uploads/${photoPath}`;
@@ -162,9 +175,12 @@ export default {
 .post-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr); /* Display 3 items in a row */
-  grid-gap: 10px;
+  grid-gap: 50px;
   justify-items: center;
-  padding: 0 20px; /* Adjust as needed */
+  padding: 0 20px;
+  max-width: 1100px;
+  margin: 0 auto; /* Center the post grid horizontally */
+
 }
 
 .post-item {
@@ -175,8 +191,9 @@ export default {
   position: relative;
   width: 100%;
   height: 0;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  padding-bottom: 90%; /* Increase the padding-bottom value for more height */
   overflow: hidden;
+  margin-top:100px;
 }
 
 .post-image {
@@ -186,6 +203,7 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  
 }
 
 .profile-info {
@@ -196,6 +214,7 @@ export default {
   padding: 20px; /* Add padding for better spacing */
   max-width: 90%;
   margin: 0 auto; /* Center horizontally */  
+  
 }
 .profile-picture {
   margin-right: 20px;
@@ -217,9 +236,7 @@ export default {
 
 .user-stats {
   display: flex;
-  align-items: center;
   margin-bottom: 100px;
-
 }
 
 .user-stats > div {
@@ -242,8 +259,6 @@ export default {
 .user-stats > div > div:last-child {
   font-size: 0.8em;
 }
-
-
 
 
 .username {
@@ -267,32 +282,6 @@ export default {
 
 .biography {
   margin-top: 10px;
-}
-
-.user-stats {
-  display: flex;
-  margin-top: 10px;
-}
-
-.user-stats > div {
-  margin-right: 20px;
-}
-
-.user-stats > div:last-child {
-  margin-right: 0;
-}
-
-.user-stats > div > div {
-  font-weight: bold;
-  text-align: center;
-}
-
-.user-stats > div > div:first-child {
-  font-size: 1.2em;
-}
-
-.user-stats > div > div:last-child {
-  font-size: 0.8em;
 }
 
 .follow-button {

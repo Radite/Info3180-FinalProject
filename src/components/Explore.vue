@@ -4,7 +4,7 @@
     <div v-else>
       <div v-for="post in posts" :key="post.id" class="post-card">
         <div class="post-header">
-          <router-link :to="`/users/${post.userProfile.id}`" class="user-profile">
+          <router-link v-if="post.userProfile" :to="`/users/${post.userProfile.id}`" class="user-profile">
             <img v-if="post.userProfile && post.userProfile.profile_photo" :src="getUserProfilePic(post.userProfile.profile_photo)" class="user-profile-pic" alt="User Profile Pic">
             <span class="username">{{ post.userProfile && post.userProfile.username }}</span>
           </router-link>
