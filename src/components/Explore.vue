@@ -266,7 +266,6 @@ fetchLikesForPost(post) {
   flex-direction: column; /* Stack posts vertically */
   align-items: center; /* Center horizontally */
   padding: 20px;
-  background-color: #fafafa;
   position: relative; 
 }
 
@@ -306,8 +305,7 @@ fetchLikesForPost(post) {
 
 .post-image-container {
   width: 100%;
-  height: 0;
-  padding-bottom: 100%;
+  height: 300px;
   position: relative;
 }
 
@@ -354,7 +352,7 @@ fetchLikesForPost(post) {
 .new-post-button {
   background-color: #4a90e2; /* Light blue color */
   border: none;
-  color: #000;
+  color: #ffffff;
   padding: 10px 20px;
   text-align: center;
   text-decoration: none;
