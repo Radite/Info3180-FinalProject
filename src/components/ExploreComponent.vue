@@ -29,7 +29,6 @@
   </div>
 </template>
 
-
 <script>
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
@@ -54,82 +53,82 @@ export default {
     }
   },
   methods: {
-      // Check if the post is a video
-  isVideo(photoPath) {
-    return photoPath.toLowerCase().endsWith('.mp4') || photoPath.toLowerCase().endsWith('.mov') || photoPath.toLowerCase().endsWith('.avi');
-  },
-  // Get the URL of the video
-  getVideoUrl(photoPath) {
-    return `http://localhost:8080/uploads/${photoPath}`;
-  },
+    // Check if the post is a video
+    isVideo(photoPath) {
+      return photoPath.toLowerCase().endsWith('.mp4') || photoPath.toLowerCase().endsWith('.mov') || photoPath.toLowerCase().endsWith('.avi');
+    },
+    // Get the URL of the video
+    getVideoUrl(photoPath) {
+      return `http://localhost:8080/uploads/${photoPath}`;
+    },
 
-  fetchPosts() {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    console.error('Authentication token is missing');
-    this.error = 'Authentication token is missing';
-    return;
-  }
+    fetchPosts() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error('Authentication token is missing');
+        this.error = 'Authentication token is missing';
+        return;
+      }
 
-  // Fetch posts
-  axios.get('http://localhost:8080/api/v1/posts', {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  })
-    .then(async response => {
-      this.posts = response.data.posts;
-      this.error = '';
-
-      // Fetch all likes
-      const likesResponse = await axios.get(`http://localhost:8080/api/v1/likes`, {
+      // Fetch posts
+      axios.get('http://localhost:8080/api/v1/posts', {
         headers: {
           Authorization: `Bearer ${token}`
         }
-      });
-
-      const likes = likesResponse.data.likes;
-
-      // Distribute likes to posts
-      this.posts.forEach(post => {
-        post.likes = likes.filter(like => like.post_id === post.id);
-        post.liked = post.likes.some(like => like.user_id === this.USER_ID);
-      });
-
-      // Fetch users data
-      this.fetchUsers();
-    })
-    .catch(error => {
-      console.error('Error fetching posts:', error);
-      this.error = 'Failed to fetch posts. Please try again later.';
-    });
-},
-fetchLikesForPost(post) {
-  return new Promise((resolve, reject) => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      reject('Authentication token is missing');
-      return;
-    }
-
-    // Fetch likes for the post
-    axios.get(`http://localhost:8080/api/v1/posts/${post.id}/likes`, {
-      headers: {
-        Authorization: `Bearer ${token}`
-      }
-    })
-      .then(response => {
-        // Check if the logged-in user has liked the post
-        const userLiked = response.data.likes.some(like => like.user_id === this.USER_ID);
-        post.liked = userLiked;
-        resolve();
       })
-      .catch(error => {
-        console.error(`Error fetching likes for post ${post.id}:`, error);
-        reject(`Failed to fetch likes for post ${post.id}. Please try again later.`);
+        .then(async response => {
+          this.posts = response.data.posts;
+          this.error = '';
+
+          // Fetch all likes
+          const likesResponse = await axios.get(`http://localhost:8080/api/v1/likes`, {
+            headers: {
+              Authorization: `Bearer ${token}`
+            }
+          });
+
+          const likes = likesResponse.data.likes;
+
+          // Distribute likes to posts
+          this.posts.forEach(post => {
+            post.likes = likes.filter(like => like.post_id === post.id);
+            post.liked = post.likes.some(like => like.user_id === this.USER_ID);
+          });
+
+          // Fetch users data
+          this.fetchUsers();
+        })
+        .catch(error => {
+          console.error('Error fetching posts:', error);
+          this.error = 'Failed to fetch posts. Please try again later.';
+        });
+    },
+    fetchLikesForPost(post) {
+      return new Promise((resolve, reject) => {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          reject('Authentication token is missing');
+          return;
+        }
+
+        // Fetch likes for the post
+        axios.get(`http://localhost:8080/api/v1/posts/${post.id}/likes`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        })
+          .then(response => {
+            // Check if the logged-in user has liked the post
+            const userLiked = response.data.likes.some(like => like.user_id === this.USER_ID);
+            post.liked = userLiked;
+            resolve();
+          })
+          .catch(error => {
+            console.error(`Error fetching likes for post ${post.id}:`, error);
+            reject(`Failed to fetch likes for post ${post.id}. Please try again later.`);
+          });
       });
-  });
-},
+    },
 
     fetchUsers() {
       const token = localStorage.getItem('token');

@@ -82,11 +82,3 @@ def serve_photo(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
-def get_followers_count(user_id):
-    followers_count = Follow.query.filter_by(user_id=user_id).count()
-    return followers_count
-
-def get_following_count(user_id):
-    following_count = Follow.query.filter_by(follower_id=user_id).count()
-    return following_count
-

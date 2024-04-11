@@ -1,10 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
-import Register from '../components/Register.vue'
-import Login from '../components/Login.vue'
-import Explore from '../components/Explore.vue'
-import UserProfile from '../components/UserProfile.vue'
-import NewPost from '../components/NewPost.vue'
+import Register from '../components/RegistrationForm.vue'
+import Login from '../components/LoginForm.vue'
+import Explore from '../components/ExploreComponent.vue'
+import UserProfile from '../components/UserProfileComponent.vue'
+import NewPost from '../components/PostForm.vue'
 import NotFoundView from '../views/NotFoundView.vue'
 
 

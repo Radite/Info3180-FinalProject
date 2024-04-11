@@ -23,20 +23,19 @@ export default {
     return {
       caption: '',
       photo: null,
-      USER_ID: null, // initialize USER_ID as null
-      error: '' // initialize error as empty string
+      USER_ID: null,
+      error: ''
     };
   },
   created() {
     const token = localStorage.getItem('token');
     if (token) {
       const decodedToken = jwtDecode(token);
-      this.USER_ID = decodedToken.user_id; // set USER_ID to the user_id from the decoded token
+      this.USER_ID = decodedToken.user_id;
     }
   },
   methods: {
     async submitForm() {
-      // Check if photo is null or has invalid extension
       if (!this.photo || !this.allowedFile(this.photo.name)) {
         this.error = 'Invalid file. Please upload a valid photo/video.';
         return;
@@ -47,7 +46,7 @@ export default {
       formData.append('photo', this.photo);
 
       try {
-        const token = localStorage.getItem('token'); // Retrieve token from localStorage
+        const token = localStorage.getItem('token');
         if (!this.USER_ID) {
           console.error('User ID is missing');
           return;
@@ -59,10 +58,9 @@ export default {
           },
         });
         console.log(response.data);
-        // Display success message
         setTimeout(() => {
           console.log('Redirecting...');
-          this.$router.push('/explore'); // Redirect to '/explore'
+          this.$router.push('/explore');
         }, 1000);
       } catch (error) {
         console.error(error);

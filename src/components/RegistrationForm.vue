@@ -32,10 +32,10 @@
           <input type="text" id="location" v-model="formData.location">
         </div>
       </div>
-<div class="input-group textarea">
-  <label for="biography">Biography</label>
-  <textarea id="biography" v-model="formData.biography"></textarea>
-</div>
+      <div class="input-group textarea">
+        <label for="biography">Biography</label>
+        <textarea id="biography" v-model="formData.biography"></textarea>
+      </div>
       <div class="form-group">
         <label for="profile-photo">Profile Photo</label>
         <input type="file" id="profile-photo" @change="onFileChange">
@@ -181,5 +181,4 @@ button {
   border-radius: 5px;
   margin-top: 10px;
 }
-
 </style>
