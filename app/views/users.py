@@ -75,3 +75,12 @@ def get_user(user_id):
         return jsonify({'user': user_data})
     else:
         return jsonify({'error': 'User not found'}), 404
+        
+def get_followers_count(user_id):
+    followers_count = Follow.query.filter_by(user_id=user_id).count()
+    return followers_count
+
+def get_following_count(user_id):
+    following_count = Follow.query.filter_by(follower_id=user_id).count()
+    return following_count
+
