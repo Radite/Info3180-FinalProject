@@ -35,12 +35,14 @@ const router = createRouter({
     {
       path: '/users/:userId',
       name: 'user-profile',
-      component: UserProfile
+      component: UserProfile,
+      meta: { requiresAuth: true }
     },
     {
       path: '/posts/new',
       name: 'new-post',
-      component: NewPost
+      component: NewPost,
+      meta: { requiresAuth: true }
     },
     {
       path: '/:catchAll(.*)',
