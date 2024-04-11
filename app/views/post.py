@@ -117,3 +117,16 @@ def get_post_by_id(post_id):
         'likes_count': len(post.likes)
     }
     return jsonify({'post': post_data}), 200
+
+# Route for retrieving likes on a specific post
+@app.route('/api/v1/posts/<int:post_id>/likes', methods=['GET'])
+def get_likes_for_post(post_id):
+    likes = Likes.query.filter_by(post_id=post_id).all()
+    likes_data = [{'id': like.id, 'post_id': like.post_id, 'user_id': like.user_id} for like in likes]
+    return jsonify({'likes': likes_data})
+
+@app.route('/api/v1/likes', methods=['GET'])
+def get_all_likes():
+    likes = Likes.query.all()
+    likes_data = [{'id': like.id, 'post_id': like.post_id, 'user_id': like.user_id} for like in likes]
+    return jsonify({'likes': likes_data})

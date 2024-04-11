@@ -4,27 +4,31 @@
     <div v-else>
       <div v-for="post in posts" :key="post.id" class="post-card">
         <div class="post-header">
-          <div class="user-profile">
+          <router-link :to="`/users/${post.userProfile.id}`" class="user-profile">
             <img v-if="post.userProfile && post.userProfile.profile_photo" :src="getUserProfilePic(post.userProfile.profile_photo)" class="user-profile-pic" alt="User Profile Pic">
             <span class="username">{{ post.userProfile && post.userProfile.username }}</span>
-          </div>
+          </router-link>
         </div>
         <div class="post-image-container">
-          <img :src="getImageUrl(post.photo)" class="post-img" alt="Post">
+          <!-- Display video if the post is a video -->
+          <video v-if="isVideo(post.photo)" :src="getVideoUrl(post.photo)" controls class="post-video"></video>
+          <!-- Display image if the post is not a video -->
+          <img v-else :src="getImageUrl(post.photo)" class="post-img" alt="Post">
         </div>
         <div class="post-content">
           <p class="post-caption">{{ post.caption }}</p>
           <div class="post-details">
-            <p class="post-likes">{{ post.likes_count }} <i class="like-icon fas fa-heart" :class="{ 'liked': post.liked }" @click="toggleLike(post)"></i> likes</p>
+            <p class="post-likes">{{ post.likes_count }} 
+              <i :class="['like-icon', post.liked ? 'fas fa-heart liked' : 'far fa-heart']" @click="toggleLike(post)"></i> likes</p>
             <p class="post-date">{{ formatDate(post.created_on) }}</p>
           </div>
         </div>
       </div>
     </div>
     <router-link to="/posts/new" class="new-post-button">New Post</router-link>
-
   </div>
 </template>
+
 
 <script>
 import axios from 'axios';
@@ -50,32 +54,83 @@ export default {
     }
   },
   methods: {
-    fetchPosts() {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        console.error('Authentication token is missing');
-        this.error = 'Authentication token is missing';
-        return;
-      }
+      // Check if the post is a video
+  isVideo(photoPath) {
+    return photoPath.toLowerCase().endsWith('.mp4') || photoPath.toLowerCase().endsWith('.mov') || photoPath.toLowerCase().endsWith('.avi');
+  },
+  // Get the URL of the video
+  getVideoUrl(photoPath) {
+    return `http://localhost:8080/uploads/${photoPath}`;
+  },
 
-      // Fetch posts
-      axios.get('http://localhost:8080/api/v1/posts', {
+  fetchPosts() {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    console.error('Authentication token is missing');
+    this.error = 'Authentication token is missing';
+    return;
+  }
+
+  // Fetch posts
+  axios.get('http://localhost:8080/api/v1/posts', {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  })
+    .then(async response => {
+      this.posts = response.data.posts;
+      this.error = '';
+
+      // Fetch all likes
+      const likesResponse = await axios.get(`http://localhost:8080/api/v1/likes`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
-      })
-        .then(response => {
-          this.posts = response.data.posts;
-          this.error = '';
+      });
 
-          // Fetch users data
-          this.fetchUsers();
-        })
-        .catch(error => {
-          console.error('Error fetching posts:', error);
-          this.error = 'Failed to fetch posts. Please try again later.';
-        });
-    },
+      const likes = likesResponse.data.likes;
+
+      // Distribute likes to posts
+      this.posts.forEach(post => {
+        post.likes = likes.filter(like => like.post_id === post.id);
+        post.liked = post.likes.some(like => like.user_id === this.USER_ID);
+      });
+
+      // Fetch users data
+      this.fetchUsers();
+    })
+    .catch(error => {
+      console.error('Error fetching posts:', error);
+      this.error = 'Failed to fetch posts. Please try again later.';
+    });
+},
+fetchLikesForPost(post) {
+  return new Promise((resolve, reject) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      reject('Authentication token is missing');
+      return;
+    }
+
+    // Fetch likes for the post
+    axios.get(`http://localhost:8080/api/v1/posts/${post.id}/likes`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+      .then(response => {
+        // Check if the logged-in user has liked the post
+        const userLiked = response.data.likes.some(like => like.user_id === this.USER_ID);
+        post.liked = userLiked;
+        resolve();
+      })
+      .catch(error => {
+        console.error(`Error fetching likes for post ${post.id}:`, error);
+        reject(`Failed to fetch likes for post ${post.id}. Please try again later.`);
+      });
+  });
+},
+
     fetchUsers() {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -108,6 +163,7 @@ export default {
         const user = this.users.find(user => user.id === post.user_id);
         if (user) {
           post.userProfile = {
+            id: user.id,
             profile_photo: user.profile_photo,
             username: user.username
           };
@@ -200,12 +256,11 @@ export default {
           console.error('Error fetching updated post:', error);
         });
     }
-  }
-
+  },
 }
 </script>
 
-<style>
+<style scoped>
 .posts-container {
   display: flex;
   flex-direction: column; /* Stack posts vertically */
@@ -234,6 +289,7 @@ export default {
 .user-profile {
   display: flex;
   align-items: center;
+  text-decoration: none; /* Remove underline */
 }
 
 .user-profile-pic {
@@ -255,7 +311,7 @@ export default {
   position: relative;
 }
 
-.post-img {
+.post-img, .post-video {
   position: absolute;
   object-fit: scale-down; 
   width: 100%;
@@ -305,7 +361,7 @@ export default {
   font-size: 16px;
   border-radius: 5px;
   cursor: pointer;
-  position: absolute; /* Change to absolute positioning */
+  position: absolute; 
   top: 20px;
   right: 20px;
 }
