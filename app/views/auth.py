@@ -14,6 +14,7 @@ from .utils import allowed_file
 from werkzeug.utils import secure_filename
 from sqlalchemy.exc import IntegrityError
 from validate_email import validate_email
+import re  # Import regular expression module for email validation
 
 @app.route('/api/v1/register', methods=['POST'])
 def register_user():
@@ -38,9 +39,21 @@ def register_user():
             return jsonify({'error': str(e)})
     else:
         print("No file uploaded, using default photo path")
-        profile_photo_path = 'profilephotos/default.jpeg'
+        profile_photo_path = os.path.join('profilephotos', 'default.jpg')
 
     try:
+        # Hash the password before saving it to the database
+        password = data['password']
+        if len(password) < 8:
+            return jsonify({'error': 'Password should be at least 8 characters long'}), 400
+        if password.isalpha() or password.isdigit():
+            return jsonify({'error': 'Password should contain both letters and numbers'}), 400
+
+        # Check email format using regular expression
+        email = data['email']
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            return jsonify({'error': 'Invalid email format'}), 400
+
         # Hash the password before saving it to the database
         hashed_password = generate_password_hash(data['password'])
 
@@ -109,7 +122,7 @@ def login_user():
     if not username or not password:
         return jsonify({'error': 'Username and password are required'}), 400
 
-    user = User.query.filter_by(username=username).first()
+    user = User.query.filter(User.username.ilike(username)).first()
     if user and check_password_hash(user.password, password):
         # Generate JWT token
         token = jwt.encode({'user_id': user.id}, app.config['SECRET_KEY'], algorithm='HS256')
