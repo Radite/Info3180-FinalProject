@@ -1,41 +1,51 @@
 <template>
   <div class="registration-form">
     <h2>Register</h2>
-    <form @submit.prevent="registerUser">
+    <form @submit.prevent="registerUser" class="form">
       <div class="form-group">
-        <label for="username">Username</label>
-        <input type="text" id="username" v-model="formData.username" required>
+        <div class="input-group">
+          <label for="username">Username</label>
+          <input type="text" id="username" v-model="formData.username" required>
+        </div>
+        <div class="input-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" v-model="formData.password" required>
+        </div>
       </div>
       <div class="form-group">
-        <label for="password">Password</label>
-        <input type="password" id="password" v-model="formData.password" required>
+        <div class="input-group">
+          <label for="firstname">First Name</label>
+          <input type="text" id="firstname" v-model="formData.firstname" required>
+        </div>
+        <div class="input-group">
+          <label for="lastname">Last Name</label>
+          <input type="text" id="lastname" v-model="formData.lastname" required>
+        </div>
       </div>
       <div class="form-group">
-        <label for="firstname">First Name</label>
-        <input type="text" id="firstname" v-model="formData.firstname" required>
+        <div class="input-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" v-model="formData.email" required>
+        </div>
+        <div class="input-group">
+          <label for="location">Location</label>
+          <input type="text" id="location" v-model="formData.location">
+        </div>
       </div>
-      <div class="form-group">
-        <label for="lastname">Last Name</label>
-        <input type="text" id="lastname" v-model="formData.lastname" required>
-      </div>
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" v-model="formData.email" required>
-      </div>
-      <div class="form-group">
-        <label for="location">Location</label>
-        <input type="text" id="location" v-model="formData.location">
-      </div>
-      <div class="form-group">
-        <label for="biography">Biography</label>
-        <textarea id="biography" v-model="formData.biography"></textarea>
-      </div>
+<div class="input-group textarea">
+  <label for="biography">Biography</label>
+  <textarea id="biography" v-model="formData.biography"></textarea>
+</div>
       <div class="form-group">
         <label for="profile-photo">Profile Photo</label>
         <input type="file" id="profile-photo" @change="onFileChange">
       </div>
       <button type="submit">Register</button>
     </form>
+
+    <div v-if="errorMessage" class="error-message">
+      {{ errorMessage }}
+    </div>
 
     <div v-if="successMessage" class="success-message">
       {{ successMessage }}
@@ -59,7 +69,8 @@ export default {
         biography: '',
         profile_photo: null
       },
-      successMessage: ''
+      successMessage: '',
+      errorMessage: ''
     };
   },
   methods: {
@@ -87,12 +98,18 @@ export default {
             profile_photo: null
           };
           this.successMessage = response.data.message;
+          this.errorMessage = '';
           setTimeout(() => {
             this.$router.push('/login');
           }, 2000);
         })
         .catch(error => {
-          console.error('Error registering user:', error);
+          if (error.response) {
+            this.errorMessage = error.response.data.error;
+          } else {
+            console.error('Error registering user:', error);
+            this.errorMessage = 'An unexpected error occurred';
+          }
         });
     },
     onFileChange(event) {
@@ -104,7 +121,7 @@ export default {
 
 <style scoped>
 .registration-form {
-  max-width: 400px;
+  max-width: 600px;
   margin: 0 auto;
   background-color: #f8f9fa;
   padding: 20px;
@@ -122,11 +139,16 @@ h2 {
   margin-bottom: 20px;
 }
 
+.input-group {
+  display: flex;
+  justify-content: space-between;
+}
+
 input[type="text"],
 input[type="password"],
 input[type="email"],
 textarea {
-  width: 100%;
+  width: calc(50% - 10px);
   padding: 10px;
   border: 1px solid #ced4da;
   border-radius: 5px;
@@ -144,6 +166,14 @@ button {
   font-size: 1rem;
 }
 
+.error-message {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 10px;
+  border-radius: 5px;
+  margin-top: 10px;
+}
+
 .success-message {
   background-color: #d4edda;
   color: #155724;
@@ -151,4 +181,5 @@ button {
   border-radius: 5px;
   margin-top: 10px;
 }
+
 </style>

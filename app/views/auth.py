@@ -12,6 +12,8 @@ from sqlalchemy.exc import IntegrityError
 from datetime import datetime
 from .utils import allowed_file
 from werkzeug.utils import secure_filename
+from sqlalchemy.exc import IntegrityError
+from validate_email import validate_email
 
 @app.route('/api/v1/register', methods=['POST'])
 def register_user():
@@ -42,6 +44,14 @@ def register_user():
         # Hash the password before saving it to the database
         hashed_password = generate_password_hash(data['password'])
 
+        # Check if username or email already exists
+        if User.query.filter_by(username=data['username']).first():
+            return jsonify({'error': 'Username already exists'}), 400
+        if User.query.filter_by(email=data['email']).first():
+            return jsonify({'error': 'Email already exists'}), 400
+        # Validate email format
+        if not validate_email(data['email']):
+            return jsonify({'error': 'Invalid email format'}), 400
         # Save user data to the database and reference the profile photo path
         print("Saving user data to the database...")
         new_user = User(
@@ -63,11 +73,12 @@ def register_user():
         return jsonify({'message': 'User registered successfully'})
     except IntegrityError:
         db.session.rollback()
-        return jsonify({'error': 'Username or email already exists'})
+        return jsonify({'error': 'Username or email already exists'}), 400
     except Exception as e:
         # Handle other exceptions and return an error message
         print(f"Exception occurred: {e}")
-        return jsonify({'error': str(e)})
+        return jsonify({'error': str(e)}), 500
+
 # Token verification decorator
 def token_required(f):
     @wraps(f)
