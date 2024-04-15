@@ -29,7 +29,8 @@
               <RouterLink :to="`/users/${userId}`" class="nav-link">My Profile</RouterLink> <!-- My Profile link -->
             </li>
             <li class ="nav-item">
-              <a @click="logout" class="nav-link">Logout</a> <!-- Logout link -->
+              <a v-if="!isAuthenticated" href="/login" class="nav-link">Login</a>
+              <a v-else @click="logout" class="nav-link">Logout</a> <!-- Logout link -->
             </li>
           </ul>
         </div>
@@ -45,6 +46,7 @@ const router = useRouter();
 import { jwtDecode } from "jwt-decode";
 
 let userId = null;
+let isAuthenticated = false;
 
 // Decode the token and set userId
 const decodeToken = () => {
@@ -52,6 +54,9 @@ const decodeToken = () => {
   if (token) {
     const decodedToken = jwtDecode(token);
     userId = decodedToken.user_id;
+    isAuthenticated = true;
+  } else {
+    isAuthenticated = false;
   }
 };
 decodeToken();
@@ -77,6 +82,7 @@ const logout = async () => {
     );
     // Clear local storage and redirect to the home page
     localStorage.removeItem("token");
+    isAuthenticated = false;
     router.push("/");
   } catch (error) {
     console.error("Logout error:", error);
