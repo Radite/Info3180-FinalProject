@@ -36,7 +36,7 @@
         <label for="biography">Biography</label>
         <textarea id="biography" v-model="formData.biography"></textarea>
       </div>
-      <div class="form-group">
+      <div class="form-group-photo">
         <label for="profile-photo">Profile Photo</label>
         <input type="file" id="profile-photo" @change="onFileChange">
       </div>
@@ -123,7 +123,7 @@ export default {
 .registration-form {
   max-width: 600px;
   margin: 0 auto;
-  background-color: #f8f9fa;
+  background-color: white;
   padding: 20px;
   border-radius: 5px;
   box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
@@ -139,16 +139,30 @@ h2 {
   margin-bottom: 20px;
 }
 
+
 .input-group {
   display: flex;
+  flex-direction: column;
   justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.form-group-photo {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-bottom: 20px;
+              }
+
+label{
+  margin-bottom: 5px;
 }
 
 input[type="text"],
 input[type="password"],
 input[type="email"],
 textarea {
-  width: calc(50% - 10px);
+  width: calc(100% - 10px);
   padding: 10px;
   border: 1px solid #ced4da;
   border-radius: 5px;
@@ -157,7 +171,7 @@ textarea {
 
 button {
   padding: 10px 20px;
-  background-color: #007bff;
+  background-color: #7ed321;
   color: #fff;
   border: none;
   border-radius: 5px;

@@ -7,7 +7,7 @@
           <label for="username" class="form-label">Username:</label>
           <input type="text" class="form-control" id="username" v-model="username" required>
         </div>
-        <div class="mb-3">
+        <div class="mb-3 password">
           <label for="password" class="form-label">Password:</label>
           <input type="password" class="form-control" id="password" v-model="password" required>
         </div>
@@ -69,7 +69,6 @@ export default {
 </script>
 <style scoped>
 .main-background {
-  background-color: #f0f0f0;
   min-height: 100vh;
   display: flex;
   align-items: flex-start; /* Aligns the container to the top */
@@ -86,10 +85,15 @@ export default {
 
 }
 
+button{
+  margin-top: 40px;
+}
+
 .btn-primary {
-  background-color: #007bff;
-  border-color: #007bff;
+  background-color: #7ed321;
+  border-color: #7ed321;
   color: white;
+  width: 100%;
 }
 
 .btn-primary:hover {

@@ -10,13 +10,13 @@ import AppFooter from "@/components/AppFooter.vue";
   <main>
     <RouterView />
   </main>
-  
+
   <AppFooter />
 </template>
 
 <style>
 body {
   padding-top: 75px;
-  background-color: #f0f0f0;
+  background-color: #f8eddb;
 }
 </style>

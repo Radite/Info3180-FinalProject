@@ -3,7 +3,7 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
   </head>
   <header>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
       <div class="container-fluid">
         <h1 class="instagram-font smaller-logo"><i class="fas fa-camera smaller-icon"></i> <span class="underline"></span> <span class="photogram-text">Photogram</span></h1>
         <button
@@ -107,11 +107,19 @@ const logout = async () => {
 /* White photogram text */
 .photogram-text {
   color: white;
+  font-family: 'Lucida Handwriting', cursive; /* Set font family */
+  font-size: 18px; /* Set font size */
+  font-weight: bold; /* Set font weight */
+  position: relative; /* Set relative positioning */
 }
 
 /* Align list items to the right */
 .navbar-nav {
   margin-left: auto;
+}
+
+nav {
+  background-color: #4a90e2;
 }
 
 /* Make list items inline and adjust margin */

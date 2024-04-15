@@ -38,7 +38,7 @@
         <div class="follow-button-container">
           <button v-if="!isCurrentUser && !isFollowing" @click="toggleFollow" class="follow-button">{{ followButtonText }}</button>
           <button v-else-if="isCurrentUser" @click="editProfile" class="follow-button">Edit Profile</button>
-          <button v-else @click="toggleFollow" class="follow-button">Following</button>
+          <button v-else @click="toggleFollow" class="following-button">Following</button>
         </div>
       </div>
     </div>
@@ -220,7 +220,7 @@ export default {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  
+
 }
 
 .profile-info {
@@ -230,8 +230,9 @@ export default {
   border: 2px solid black; /* Add black border */
   padding: 20px; /* Add padding for better spacing */
   max-width: 90%;
-  margin: 0 auto; /* Center horizontally */  
-  
+  margin: 0 auto; /* Center horizontally */
+  background-color: white;
+
 }
 .profile-picture {
   margin-right: 20px;
@@ -305,6 +306,18 @@ export default {
   margin-top: 10px;
   align-self: flex-end;
   background-color: #4a90e2; /* Set background color */
+  color: white; /* Set text color */
+  border: none; /* Remove border */
+  padding: 10px 20px; /* Add padding */
+  cursor: pointer; /* Add pointer cursor */
+  width: 200px; /* Set width of button */
+  border-radius: 5px; /* Add border radius */
+}
+
+.following-button {
+  margin-top: 10px;
+  align-self: flex-end;
+  background-color: #7ed321; /* Set background color */
   color: white; /* Set text color */
   border: none; /* Remove border */
   padding: 10px 20px; /* Add padding */

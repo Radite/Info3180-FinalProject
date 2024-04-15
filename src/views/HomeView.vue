@@ -13,7 +13,7 @@ import { routerLink } from 'vue-router';
         <img src="/assets/main-image.jpg" alt="Main Image" />
       </div>
     </div>
-    
+
     <!-- Right card with title, message, and buttons -->
     <div class="card">
       <div class="content">
@@ -48,6 +48,7 @@ const photogramMessage = ref("Share your favorite moments with friends, family, 
   height: 350px; /* Set the height of the card */
   overflow: hidden; /* Prevent overflow of content */
   display: flex; /* Make the image section fill the height of the card */
+
 }
 
 /* Styles for the image section */
@@ -65,7 +66,7 @@ const photogramMessage = ref("Share your favorite moments with friends, family, 
 
 /* Styles for the first card */
 .card:first-child {
-  border-right: 12px solid #f0f0f0; /* Add right border with color */
+  border-right: 12px solid #f8eddb;; /* Add right border with color */
 }
 
 /* Styles for the content */
@@ -106,10 +107,12 @@ const photogramMessage = ref("Share your favorite moments with friends, family, 
 }
 
 /* Font face styles */
-@font-face {
-  font-family: 'Billabong'; /* Set font family */
-  src: url('path-to-your-font/Billabong.ttf'); /* Define font source */
-}
+/*
+@font-face { */
+/*  font-family: 'Billabong'; /* Set font family */
+/*  src: url('path-to-your-font/Billabong.ttf'); /* Define font source */
+/*}
+
 
 /* Styles for the Instagram font */
 .instagram-font {
@@ -134,6 +137,10 @@ const photogramMessage = ref("Share your favorite moments with friends, family, 
   position: relative; /* Set relative positioning */
   z-index: 1; /* Set z-index */
   color:black;
+  font-family: 'Lucida Handwriting', cursive; /* Set font family */
+  font-size: 28px; /* Set font size */
+  font-weight: bold; /* Set font weight */
+  position: relative; /* Set relative positioning */
 }
 
 /* Styles for the register and login buttons */

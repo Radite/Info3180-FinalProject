@@ -1,15 +1,19 @@
 <template>
   <div class="container">
+    <h3>New Post</h3>
+
     <form @submit.prevent="submitForm">
       <label for="caption">Caption:</label>
-      <input type="text" id="caption" v-model="caption">
+      <textarea type="text" id="caption" v-model="caption"></textarea>
 
       <label for="photo">Photo/Video:</label>
       <input type="file" id="photo" accept="image/*, video/*" @change="onFileChange">
 
       <p v-if="error" class="error">{{ error }}</p>
 
-      <button type="submit">Submit</button>
+      <div class="button">
+        <button type="submit">Submit</button>
+      </div>
     </form>
   </div>
 </template>
@@ -80,6 +84,7 @@ export default {
 
 <style scoped>
 .container {
+  padding-top: 5%;
   max-width: 500px;
   margin: 0 auto;
 }
@@ -98,12 +103,14 @@ label {
 }
 
 input[type="text"],
-input[type="file"] {
+input[type="file"],
+textarea {
   width: 100%;
   padding: 10px;
-  border: 1px solid #ddd;
+  //border: 1px solid #ddd;
   margin-bottom: 20px;
 }
+
 
 button {
   padding: 10px 15px;
@@ -111,6 +118,22 @@ button {
   color: #fff;
   border: none;
   cursor: pointer;
+}
+
+.button{
+  text-align: center;
+}
+
+button[type='submit']{
+  background-color: #7ed321;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  width: 100%;
+
+  cursor: pointer;
+  //width: 200px;
+  border-radius: 5px;
 }
 
 button:hover {
