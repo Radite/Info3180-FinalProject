@@ -44,9 +44,11 @@ import { useRouter } from "vue-router";
 import axios from "axios";
 const router = useRouter();
 import { jwtDecode } from "jwt-decode";
+import debounce from 'lodash/debounce';
 
 let userId = null;
 let isAuthenticated = false;
+let logoutTimer;
 
 // Decode the token and set userId
 const decodeToken = () => {
@@ -60,7 +62,7 @@ const decodeToken = () => {
   }
 };
 decodeToken();
-console.log(userId)
+// console.log(userId)
 
 // Function to logout the user
 const logout = async () => {
@@ -89,6 +91,25 @@ const logout = async () => {
     // Handle logout error
   }
 };
+
+//Timer function to auto-logout user after period of inactivity
+const logoutTiming = () => {
+  const logoutTime = 30 * 60 * 1000;
+
+  clearTimeout(logoutTimer);
+  console.log('timer running');
+  logoutTimer = setTimeout(() => {
+    logout();
+  }, logoutTime)
+}
+
+//debounce throttles the amount of times the auto-logout funtion is called.
+const runLogoutTimer = debounce(() => {
+  logoutTiming();
+}, 10000)
+
+document.addEventListener("mousemove", runLogoutTimer);
+document.addEventListener("keypress", runLogoutTimer);
 
 
 
